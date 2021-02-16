@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
-from vaNNilla import rand_range
+from vaNNilla import Random
 
-rand = rand_range(0, 10)
+rand = Random(54)
 
-nums = [next(rand) for n in range(10000)]
+nums = [rand.next(0, 10) for n in range(10000)]
 print(nums)
 plt.hist(nums, bins=20, edgecolor='k')
 plt.xticks(fontsize=15)

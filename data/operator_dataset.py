@@ -1,19 +1,20 @@
+def features():
+    return [(0, 0),
+            (0, 1),
+            (1, 0),
+            (1, 1)]
+
+
 def AND():
-    return [{(0, 0): 0},
-            {(0, 1): 0},
-            {(1, 0): 0},
-            {(1, 1): 1}]
+    labels = [0, 0, 0, 1]
+    return features(), labels
 
 
 def OR():
-    return [{(0, 0): 0},
-            {(0, 1): 1},
-            {(1, 0): 1},
-            {(1, 1): 1}]
+    labels = [0, 1, 1, 1]
+    return features(), labels
 
 
 def XOR():
-    return [{(0, 0): 0},
-            {(0, 1): 1},
-            {(1, 0): 1},
-            {(1, 1): 0}]
+    labels = [0, 1, 1, 0]
+    return features(), labels

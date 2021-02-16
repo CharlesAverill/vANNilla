@@ -1,3 +1,3 @@
-from .utils import rand_range
+from .random import Random
 
-__all__ = ["rand_range"]
+__all__ = ["Random"]
