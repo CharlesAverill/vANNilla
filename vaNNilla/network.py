@@ -53,7 +53,7 @@ class SimpleNetwork:
                 percent_complete += 1
                 complete = "0" * percent_complete
                 incomplete = "-" * (10 - percent_complete)
-                print(f"/{complete}{incomplete}/ Error: {error}")
+                print(f"/{complete}{incomplete}/ Loss: {error}")
 
     def predict(self, data):
         if len(data[0]) != self.input_shape:
