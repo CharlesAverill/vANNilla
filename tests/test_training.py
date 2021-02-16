@@ -1,5 +1,5 @@
-from vaNNilla.utils.activation import ACTIVATION_FUNCTIONS
-from vaNNilla.utils.matrix import transpose, outer_prod
+from vANNilla.utils.activation import ACTIVATION_FUNCTIONS
+from vANNilla.utils.matrix import transpose, outer_prod
 import numpy as np
 
 

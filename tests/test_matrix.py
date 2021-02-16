@@ -1,5 +1,5 @@
 import numpy as np
-from vaNNilla.utils import outer_prod, dot_prod, transpose
+from vANNilla.utils import outer_prod, dot_prod, transpose
 
 
 def test_outer_prod():
