@@ -45,8 +45,10 @@ class SimpleNetwork:
             partial_slope, error = self.loss(predictions, labels, self.activation, self.activation_ddx)
             transposed_features = transpose(features)
 
-            new_weights = [weight - self.learning_rate * dot
-                           for weight, dot in zip(old_weights, outer_prod(transposed_features, partial_slope))]
+            new_weights = [weight - self.learning_rate * dot for weight, dot
+                           in
+                           zip(old_weights,
+                               outer_prod(transposed_features, partial_slope))]
             self.set_weights(new_weights)
 
             if epoch >= epochs / (10 * (percent_complete + 1)) and percent_complete / 10 < epoch / epochs:
