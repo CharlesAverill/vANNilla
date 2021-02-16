@@ -1,3 +1,3 @@
-from .random import Random
+from .network import SimpleNetwork
 
-__all__ = ["Random"]
+__all__ = ["SimpleNetwork"]
