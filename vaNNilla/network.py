@@ -1,7 +1,7 @@
 from .random import Random
 from .neuron import Neuron
-from .activation import ACTIVATION_FUNCTIONS
-from .loss import LOSS_FUNCTIONS
+from .utils.activation import ACTIVATION_FUNCTIONS
+from .utils.loss import LOSS_FUNCTIONS
 from .utils import outer_prod, transpose, dot_prod
 
 
