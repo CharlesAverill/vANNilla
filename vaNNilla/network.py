@@ -35,27 +35,30 @@ class SimpleNetwork:
             self.neurons[i].weight = new_weights[i]
 
     def fit(self, features, labels, epochs):
+        loss = []
         percent_complete = 0
         for epoch in range(epochs):
             old_weights = self.get_weights()
 
-            dots = outer_prod(features, old_weights)
-            predictions = [dot + self.bias for dot in dots]
-
+            predictions = [pred + self.bias for pred in outer_prod(features, old_weights)]
             partial_slope, error = self.loss(predictions, labels, self.activation, self.activation_ddx)
-            transposed_features = transpose(features)
+            loss.append(error)
 
-            new_weights = [weight - self.learning_rate * dot for weight, dot
-                           in
-                           zip(old_weights,
-                               outer_prod(transposed_features, partial_slope))]
+            transposed = transpose(features)
+
+            new_weights = [weight - self.learning_rate * dot for weight, dot in
+                           zip(old_weights, outer_prod(transposed, partial_slope))]
             self.set_weights(new_weights)
+
+            for cut in partial_slope:
+                self.bias = self.bias - self.learning_rate * cut
 
             if epoch >= epochs / (10 * (percent_complete + 1)) and percent_complete / 10 < epoch / epochs:
                 percent_complete += 1
                 complete = "0" * percent_complete
                 incomplete = "-" * (10 - percent_complete)
                 print(f"/{complete}{incomplete}/ Loss: {error}")
+        return loss
 
     def predict(self, data):
         if len(data[0]) != self.input_shape:
