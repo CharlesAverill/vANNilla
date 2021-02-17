@@ -1,5 +1,5 @@
 from vANNilla import SimpleNetwork
-from data import XOR, AND, OR, linear_regression
+from data.regression import linear_regression
 import matplotlib.pyplot as plt
 
 features, labels = linear_regression()
