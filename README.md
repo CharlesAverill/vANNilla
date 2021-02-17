@@ -11,4 +11,4 @@ Just lists, floats, and classes B)
 ### First time I got the loss to minimize
 ![](images/first_loss_minimization.png)
 ### First successful linear regression
-![](images/linear_regression_accuracy.png)
+![](images/uniform_linear_regression.png)

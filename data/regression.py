@@ -12,17 +12,24 @@ def x():
     return out
 
 
-def linear_regression(apply_scaling=True):
+def linear_regression():
     # f(x) = 7x + 9 + random(-num_x / 3, num_x / 3)
     rng = Random()
     features = [[feature] for feature in x()]
     rng_bound = len(features) / 3
     labels = [(7 * feature[0]) + 9 + rng.next(-rng_bound, rng_bound) for feature in features]
 
-    if apply_scaling:
-        max_feature = features[-1][0]
-        max_label = max(labels)
-        features = [[feature[0] / max_feature] for feature in features]
-        labels = [label / max_label for label in labels]
+    max_feature = features[-1][0]
+    max_label = max(labels)
+    features = [[feature[0] / max_feature] for feature in features]
+    labels = [label / max_label for label in labels]
 
     return features, labels
+
+
+def quadratic_regression():
+    # f(x) = 3(x - 5)^2 + 2 + random(-num_x / 3, num_x / 3)
+    rng = Random()
+    features = [[feature] for feature in x()]
+    rng_bound = len(features) / 3
+    labels = [3 * ((feature[0] - 5) ** 2) + 2 + rng.next(-rng_bound, rng_bound) for feature in features]
