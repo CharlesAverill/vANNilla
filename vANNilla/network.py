@@ -1,4 +1,4 @@
-from .random import Random
+from vANNilla.utils.random import Random
 from .neuron import Neuron
 from .utils.activation import ACTIVATION_FUNCTIONS
 from .utils.loss import LOSS_FUNCTIONS
@@ -58,6 +58,7 @@ class SimpleNetwork:
                 complete = "0" * percent_complete
                 incomplete = "-" * (10 - percent_complete)
                 print(f"/{complete}{incomplete}/ Loss: {error}")
+
         return loss
 
     def predict(self, data):

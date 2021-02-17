@@ -19,6 +19,7 @@ class Random:
     def stop(self):
         self.kill_generator = True
         while self.generator_active:
+            next(self.rng)
             print("Killing generator")
         self.kill_generator = False
 
