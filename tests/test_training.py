@@ -15,16 +15,16 @@ def test_activation_funcs():
     preds = [-15, 3.14, 1, 6, 1, 0, -1, -1.56, -12, 45.9]
     # sigmoid
     assert [round(n, 5) for n in np_sigmoid(np.array(preds)).tolist()] == \
-           [round(ACTIVATION_FUNCTIONS["sigmoid"][0](xw), 5) for xw in preds]
+           [round(n, 5) for n in ACTIVATION_FUNCTIONS["sigmoid"][0](preds)]
     # relu
     np_relu = np.array(preds)
     np_relu[np_relu < 0] = 0
-    assert np_relu.tolist() == [ACTIVATION_FUNCTIONS["relu"][0](xw) for xw in preds]
+    assert np_relu.tolist() == ACTIVATION_FUNCTIONS["relu"][0](preds)
     # tanh
     np_tanh = np.array(preds)
     np_tanh = (np.exp(np_tanh) - np.exp(-np_tanh)) / (np.exp(np_tanh) + np.exp(-np_tanh))
     assert [round(n, 5) for n in np_tanh] == \
-           [round(ACTIVATION_FUNCTIONS["tanh"][0](xw), 5) for xw in preds]
+           [round(xw, 5) for xw in ACTIVATION_FUNCTIONS["tanh"][0](preds)]
 
 
 def test_mse():

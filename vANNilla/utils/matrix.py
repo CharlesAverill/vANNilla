@@ -14,3 +14,7 @@ def outer_prod(m, n):
 
 def transpose(m):
     return list(map(list, zip(*m)))
+
+
+def identity(size):
+    return [([0] * i) + [1] + ([0] * (size - i - 1)) for i in range(size)]

@@ -1,28 +1,29 @@
 from .constants import E
 
 
-def sigmoid(x):
-    return 1 / (1 + (E ** -x))
+def sigmoid(inputs):
+    return [1 / (1 + (E ** -x)) for x in inputs]
 
 
-def sigmoid_ddx(x):
-    return sigmoid(x) * (1 - sigmoid(x))
+def sigmoid_ddx(inputs):
+    activated = sigmoid(inputs)
+    return [n * (1 - n) for n in activated]
 
 
-def relu(x):
-    return max(0, x)
+def relu(inputs):
+    return [max(0, x) for x in inputs]
 
 
-def relu_ddx(x):
-    return (x > 0) * 1
+def relu_ddx(inputs):
+    return [(x > 0) * 1 for x in inputs]
 
 
-def tanh(x):
-    return ((E ** x) - (E ** -x)) / ((E ** x) + (E ** -x))
+def tanh(inputs):
+    return [((E ** x) - (E ** -x)) / ((E ** x) + (E ** -x)) for x in inputs]
 
 
 def tanh_ddx(x):
-    return 1 - (x ** 2)
+    return [1 - (x ** 2) for x in inputs]
 
 
 ACTIVATION_FUNCTIONS = {"sigmoid": (sigmoid, sigmoid_ddx),
