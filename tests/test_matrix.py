@@ -1,19 +1,20 @@
 import numpy as np
-from vANNilla.utils import outer_prod, dot_prod, transpose
+
+from vANNilla.utils import dot_prod, scalar_dot, transpose
 
 
 def test_outer_prod():
     m = [[1, 2], [3, 4], [5, 6]]
     n = [5, 6]
 
-    assert np.dot(np.array(m), np.array(n)).tolist() == outer_prod(m, n)
+    assert np.dot(np.array(m), np.array(n)).tolist() == dot_prod(m, n)
 
 
 def test_dot_prod():
     m = [1, 2, 3]
     n = [4, 5, 6]
 
-    assert np.dot(np.array(m), np.array(n)) == dot_prod(m, n)
+    assert np.dot(np.array(m), np.array(n)) == scalar_dot(m, n)
 
 
 def test_add_to_matrix():

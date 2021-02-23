@@ -22,10 +22,12 @@ def tanh(inputs):
     return [((E ** x) - (E ** -x)) / ((E ** x) + (E ** -x)) for x in inputs]
 
 
-def tanh_ddx(x):
+def tanh_ddx(inputs):
     return [1 - (x ** 2) for x in inputs]
 
 
-ACTIVATION_FUNCTIONS = {"sigmoid": (sigmoid, sigmoid_ddx),
-                        "relu": (relu, relu_ddx),
-                        "tanh": (tanh, tanh_ddx)}
+ACTIVATION_FUNCTIONS = {
+    "sigmoid": (sigmoid, sigmoid_ddx),
+    "relu": (relu, relu_ddx),
+    "tanh": (tanh, tanh_ddx),
+}

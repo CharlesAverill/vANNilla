@@ -1,6 +1,7 @@
-from vANNilla.utils.activation import ACTIVATION_FUNCTIONS
-from vANNilla.utils.matrix import transpose, outer_prod
 import numpy as np
+
+from vANNilla.utils.activation import ACTIVATION_FUNCTIONS
+from vANNilla.utils.matrix import dot_prod, transpose
 
 
 def np_sigmoid(x):
@@ -14,41 +15,50 @@ def np_ddx_sigmoid(x):
 def test_activation_funcs():
     preds = [-15, 3.14, 1, 6, 1, 0, -1, -1.56, -12, 45.9]
     # sigmoid
-    assert [round(n, 5) for n in np_sigmoid(np.array(preds)).tolist()] == \
-           [round(n, 5) for n in ACTIVATION_FUNCTIONS["sigmoid"][0](preds)]
+    assert [round(n, 5) for n in np_sigmoid(np.array(preds)).tolist()] == [
+        round(n, 5) for n in ACTIVATION_FUNCTIONS["sigmoid"][0](preds)
+    ]
     # relu
     np_relu = np.array(preds)
     np_relu[np_relu < 0] = 0
     assert np_relu.tolist() == ACTIVATION_FUNCTIONS["relu"][0](preds)
     # tanh
     np_tanh = np.array(preds)
-    np_tanh = (np.exp(np_tanh) - np.exp(-np_tanh)) / (np.exp(np_tanh) + np.exp(-np_tanh))
-    assert [round(n, 5) for n in np_tanh] == \
-           [round(xw, 5) for xw in ACTIVATION_FUNCTIONS["tanh"][0](preds)]
+    np_tanh = (np.exp(np_tanh) - np.exp(-np_tanh)) / (
+        np.exp(np_tanh) + np.exp(-np_tanh)
+    )
+    assert [round(n, 5) for n in np_tanh] == [
+        round(xw, 5) for xw in ACTIVATION_FUNCTIONS["tanh"][0](preds)
+    ]
 
 
 def test_mse():
     activated = [1, 2, 3, 4, 5]
     labels = [1, 0, 6, 0, 10]
 
-    assert (np.array(activated) - np.array(labels)).tolist() == [activated_n - labels_n for activated_n, labels_n in
-                                                                 zip(activated, labels)]
+    assert (np.array(activated) - np.array(labels)).tolist() == [
+        activated_n - labels_n
+        for activated_n, labels_n in zip(activated, labels)
+    ]
 
     error = (np.array(activated) - np.array(labels)).tolist()
     d_predictions = np_ddx_sigmoid(np.array(activated)).tolist()
 
-    assert (np.array(error) * np.array(d_predictions)).tolist() == [error[i] * d_predictions[i] for i in
-                                                                    range(len(error))]
+    assert (np.array(error) * np.array(d_predictions)).tolist() == [
+        error[i] * d_predictions[i] for i in range(len(error))
+    ]
 
 
 def test_weight_change():
     old_weights = [0, 1]
     learning_rate = 0.05
     inputs = transpose([[1, 2], [2, 3], [3, 4], [5, 6]])
-    partial_slope = [.1, -.1, -.5, .5]
+    partial_slope = [0.1, -0.1, -0.5, 0.5]
 
-    assert (np.array(old_weights) - learning_rate * np.dot(np.array(inputs), np.array(partial_slope))).tolist() == [
-        weight - learning_rate * dot for weight, dot
-        in
-        zip(old_weights,
-            outer_prod(inputs, partial_slope))]
+    assert (
+        np.array(old_weights)
+        - learning_rate * np.dot(np.array(inputs), np.array(partial_slope))
+    ).tolist() == [
+        weight - learning_rate * dot
+        for weight, dot in zip(old_weights, dot_prod(inputs, partial_slope))
+    ]
