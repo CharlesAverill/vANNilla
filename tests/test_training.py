@@ -1,7 +1,7 @@
 import numpy as np
 
+from vANNilla.utils import Tensor
 from vANNilla.utils.activation import ACTIVATION_FUNCTIONS
-from vANNilla.utils.matrix import dot_prod, transpose
 
 
 def np_sigmoid(x):
@@ -52,13 +52,43 @@ def test_mse():
 def test_weight_change():
     old_weights = [0, 1]
     learning_rate = 0.05
-    inputs = transpose([[1, 2], [2, 3], [3, 4], [5, 6]])
-    partial_slope = [0.1, -0.1, -0.5, 0.5]
+    inputs = Tensor([[1, 2], [3, 4], [5, 6], [7, 8]]).transposed
+    partial_slope = Tensor([0.1, -0.1, -0.5, 0.5])
 
-    assert (
-        np.array(old_weights)
-        - learning_rate * np.dot(np.array(inputs), np.array(partial_slope))
-    ).tolist() == [
-        weight - learning_rate * dot
-        for weight, dot in zip(old_weights, dot_prod(inputs, partial_slope))
-    ]
+    print(
+        Tensor(
+            (
+                np.array(old_weights)
+                - np.dot(
+                    np.array(inputs.tensor_values),
+                    np.array(partial_slope.tensor_values),
+                )
+                * learning_rate
+            ).tolist()
+        )
+    )
+
+    print(
+        Tensor(
+            [
+                Tensor(weight) - dot * learning_rate
+                for weight, dot in zip(old_weights, inputs * partial_slope)
+            ]
+        )
+    )
+
+    assert Tensor(
+        (
+            np.array(old_weights)
+            - np.dot(
+                np.array(inputs.tensor_values),
+                np.array(partial_slope.tensor_values),
+            )
+            * learning_rate
+        ).tolist()
+    ) == Tensor(
+        [
+            Tensor(weight) - dot * learning_rate
+            for weight, dot in zip(old_weights, inputs * partial_slope)
+        ]
+    )

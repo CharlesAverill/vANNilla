@@ -1,5 +1,6 @@
 from .utils.activation import ACTIVATION_FUNCTIONS
-from .utils.matrix import dot_prod, mean, random, shape, transpose, zeros
+from .utils.matrix import random, zeros
+from .utils.tensor import Tensor
 
 
 class Layer:
@@ -26,7 +27,7 @@ class Layer:
         return self.weights
 
     def set_weights(self, new_weights):
-        if shape(new_weights) == shape(self.weights):
+        if new_weights.shape == self.weights.shape:
             self.weights = new_weights
         else:
             raise IndexError(
@@ -38,7 +39,7 @@ class Layer:
         return self.biases
 
     def set_biases(self, new_biases):
-        if shape(new_biases) == shape(self.biases):
+        if new_biases.shape == self.biases.shape:
             self.weights = new_biases
         raise IndexError(
             "Bias set failed: New biases do not match shape of old biases"
@@ -60,7 +61,7 @@ class Activation(Layer):
         return self.activation(inputs)
 
     def backward(self, inputs, gradients):
-        return dot_prod(self.activation_ddx(gradients), gradients)
+        return self.activation_ddx(gradients) * gradients
 
 
 class Dense(Layer):
@@ -72,39 +73,44 @@ class Dense(Layer):
         xavier_constant = (
             2 / (self.input_shape[0] + self.output_shape[0])
         ) ** 0.5
-        self.weights = random(
-            dims=(self.input_shape[0], self.output_shape[0]),
-            min_val=-xavier_constant,
-            max_val=xavier_constant,
+        self.weights = Tensor(
+            random(
+                dims=(self.input_shape[0], self.output_shape[0]),
+                min_val=-xavier_constant,
+                max_val=xavier_constant,
+            )
         )
-        self.biases = zeros(self.output_shape[0])
+        self.biases = Tensor(zeros(self.output_shape[0]))
 
     def forward(self, inputs):
-        return [
-            xw + b
-            for xw, b in zip(dot_prod(inputs, self.weights), self.biases)
-        ]
+        return [xw + b for xw, b in zip(inputs * self.weights, self.biases)]
 
     def backward(self, inputs, gradient_output):
-        gradient_input = dot_prod(gradient_output, transpose(self.weights))
-        gradient_weights = dot_prod(transpose(inputs), gradient_output)
+        gradient_input = gradient_output * self.weights.transposed
+        gradient_weights = inputs.transposed * gradient_output
         gradient_biases = [
-            shape(inputs)[0] * avg for avg in mean(gradient_output, axis=0)
+            inputs.shape[0] * avg for avg in gradient_output.mean(axis=0)
         ]
 
         self.set_weights(
-            [
-                weight - self.learning_rate * gradient_weight
-                for weight, gradient_weight in zip(
-                    self.weights, gradient_weights
-                )
-            ]
+            Tensor(
+                [
+                    weight - self.learning_rate * gradient_weight
+                    for weight, gradient_weight in zip(
+                        self.weights, gradient_weights
+                    )
+                ]
+            )
         )
         self.set_biases(
-            [
-                bias - self.learning_rate * gradient_bias
-                for bias, gradient_bias in zip(self.biases, gradient_biases)
-            ]
+            Tensor(
+                [
+                    bias - self.learning_rate * gradient_bias
+                    for bias, gradient_bias in zip(
+                        self.biases, gradient_biases
+                    )
+                ]
+            )
         )
 
         return gradient_input

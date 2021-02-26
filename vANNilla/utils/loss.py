@@ -1,3 +1,6 @@
+from vANNilla.utils.tensor import Tensor
+
+
 def mse(activated, labels, activation_ddx):
     """
     :param activated: Activated predictions from epoch
@@ -12,7 +15,7 @@ def mse(activated, labels, activation_ddx):
     d_predictions = activation_ddx(activated)
     partial_slope = [error[i] * d_predictions[i] for i in range(len(error))]
 
-    return partial_slope, sum(error) / len(error)
+    return Tensor(partial_slope), sum(error) / len(error)
 
 
 LOSS_FUNCTIONS = {"mse": mse}

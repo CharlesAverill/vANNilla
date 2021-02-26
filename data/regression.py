@@ -39,10 +39,10 @@ def quadratic_regression():
         3 * ((feature[0] - 50) ** 2) + 2 + rng.next(-rng_bound, rng_bound)
         for feature in features
     ]
-    """
+
     max_feature = features[-1][0]
     max_label = max(labels)
     features = [[feature[0] / max_feature] for feature in features]
     labels = [label / max_label for label in labels]
-    """
+
     return features, labels

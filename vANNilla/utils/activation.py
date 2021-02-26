@@ -1,8 +1,11 @@
-from .constants import E
+from vANNilla.utils.constants import E
+from vANNilla.utils.tensor import Tensor
 
 
 def sigmoid(inputs):
-    return [1 / (1 + (E ** -x)) for x in inputs]
+    return Tensor(
+        [1 / (1 + (E ** (-Tensor(x)).first_value())) for x in inputs]
+    )
 
 
 def sigmoid_ddx(inputs):

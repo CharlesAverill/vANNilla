@@ -1,14 +1,14 @@
 from .activation import ACTIVATION_FUNCTIONS
 from .constants import E
 from .loss import LOSS_FUNCTIONS
-from .matrix import dot_prod, identity, scalar_dot, transpose
+from .matrix import identity, scalar_dot
+from .tensor import Tensor
 
 __all__ = [
     "ACTIVATION_FUNCTIONS",
     "E",
     "LOSS_FUNCTIONS",
-    "dot_prod",
     "identity",
     "scalar_dot",
-    "transpose",
+    "Tensor",
 ]

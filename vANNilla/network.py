@@ -1,15 +1,15 @@
 from vANNilla.layers import Dense
-from vANNilla.utils import dot_prod, scalar_dot, transpose
 from vANNilla.utils.activation import ACTIVATION_FUNCTIONS
 from vANNilla.utils.loss import LOSS_FUNCTIONS
 from vANNilla.utils.random import Random
+from vANNilla.utils.tensor import Tensor
 
 
 class Network:
     def __init__(self):
         self.rng = Random()
-        self.layers = []
-        self.biases = []
+        self.layers = Tensor()
+        self.biases = Tensor()
         self.learning_rate = None
 
     def get_weights(self):
@@ -53,6 +53,7 @@ class SimpleNetwork(Network):
             )
 
     def fit(self, features, labels, epochs):
+        features, labels = Tensor(features), Tensor(labels)
         loss = []
         percent_complete = 0
         for epoch in range(epochs):
@@ -73,8 +74,7 @@ class SimpleNetwork(Network):
 
     def feed_forward(self, features):
         predictions = [
-            pred + self.bias
-            for pred in dot_prod(features, self.layer.get_weights()[0])
+            self.bias + pred for pred in features * self.layer.get_weights()[0]
         ]
         return self.activation(predictions)
 
@@ -83,16 +83,14 @@ class SimpleNetwork(Network):
             data_fed_forward, labels, self.activation_ddx
         )
 
-        transposed = transpose(features)
+        transposed = features.transposed
 
         old_weights = self.layer.get_weights()[0]
         new_weights = [
             weight - self.learning_rate * dot
-            for weight, dot in zip(
-                old_weights, dot_prod(transposed, partial_slope)
-            )
+            for weight, dot in zip(old_weights, transposed * partial_slope)
         ]
-        self.layer.set_weights([new_weights])
+        self.layer.set_weights(Tensor([new_weights]))
 
         for cut in partial_slope:
             self.bias -= self.learning_rate * cut
@@ -108,7 +106,7 @@ class SimpleNetwork(Network):
         for row in data:
             predictions.append(
                 self.activation(
-                    [scalar_dot(row, self.layer.get_weights()[0]) + self.bias]
-                )
+                    [self.bias + Tensor(row) * self.layer.get_weights()[0]]
+                ).tensor_values
             )
         return predictions
