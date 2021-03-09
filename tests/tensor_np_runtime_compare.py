@@ -11,14 +11,17 @@ t_add = (
     "Tensor([[7, 8, 9], [10, 11, 12]])"
 )
 
+totals = []
+
 print("Testing addition")
 add_times = [
     timeit.timeit(np_add, number=500),
     timeit.timeit(t_add, number=500),
 ]
+totals.append(add_times[1] / add_times[0])
 print(f"numPy: {add_times[0]}")
 print(f"Tensor: {add_times[1]}")
-print(f"numPy {add_times[1] / add_times[0]}x faster than Tensor\n")
+print(f"numPy {totals[-1]}x faster than Tensor\n")
 
 np_dot = (
     "import numpy as np\n"
@@ -30,10 +33,13 @@ t_dot = (
 )
 
 print("Testing inner product")
-add_times = [
+dot_times = [
     timeit.timeit(np_dot, number=500),
     timeit.timeit(t_dot, number=500),
 ]
-print(f"numPy: {add_times[0]}")
-print(f"Tensor: {add_times[1]}")
-print(f"numPy {add_times[1] / add_times[0]}x faster than Tensor\n")
+totals.append(dot_times[1] / dot_times[0])
+print(f"numPy: {dot_times[0]}")
+print(f"Tensor: {dot_times[1]}")
+print(f"numPy {dot_times[1] / dot_times[0]}x faster than Tensor\n")
+
+print(f"numPy {sum(totals) / len(totals)}x faster than Tensor on average")

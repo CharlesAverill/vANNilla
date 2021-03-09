@@ -31,6 +31,9 @@ class Tensor:
         else:
             raise TypeError(f"Cannot create tensor from type {type_tval}")
         self.precision = precision
+        self.__shape = None
+        self.__flattened = None
+        self.__transposed = None
 
     def multidim_enumerate(self, submatrix=None, dim=None):
         """
@@ -57,6 +60,11 @@ class Tensor:
 
     @property
     def flattened(self):
+        if not self.__flattened:
+            self.__flattened = self.__flattened_helper()
+        return self.__flattened
+
+    def __flattened_helper(self):
         """Return a flattened (1-dimensional) copy of the Tensor"""
         ttype = self.tensor_type
         if ttype == "scalar" or ttype == "empty":
@@ -67,6 +75,11 @@ class Tensor:
 
     @property
     def transposed(self):
+        if not self.__transposed:
+            self.__transposed = self.__transposed_helper()
+        return self.__transposed
+
+    def __transposed_helper(self):
         if self.tensor_type == "vector":
             return Tensor([[item] for item in self])
         return Tensor(list(map(list, zip(*self.tensor_values))))
@@ -77,6 +90,11 @@ class Tensor:
 
     @property
     def shape(self):
+        if not self.__shape:
+            self.__shape = self.__shape_helper()
+        return self.__shape
+
+    def __shape_helper(self):
         # Tuple of shape of vector m, accounts for raggedness
         if (
             type(self.tensor_values) == int
