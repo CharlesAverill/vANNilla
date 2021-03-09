@@ -27,9 +27,7 @@ class Tensor:
         elif type_tval == Tensor:
             self.tensor_values = tensor_values.copy_tensor_values()
         elif type_tval == list:
-            self.tensor_values = [
-                Tensor(t).tensor_values for t in tensor_values
-            ]
+            self.tensor_values = tensor_values
         else:
             raise TypeError(f"Cannot create tensor from type {type_tval}")
         self.precision = precision
@@ -368,7 +366,7 @@ class Tensor:
         if otype not in (int, float, Tensor):
             raise TypeError(f"Tensor cannot add with type {otype}")
         if otype in (int, float) or (
-            otype == Tensor and len(other.shape) == 0
+            otype == Tensor and len(other.shape) in (0, 1)
         ):
             return Tensor([flat + other for flat in self.flattened]).reshape(
                 sshape

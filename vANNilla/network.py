@@ -73,9 +73,7 @@ class SimpleNetwork(Network):
         return loss
 
     def feed_forward(self, features):
-        predictions = [
-            self.bias + pred for pred in features * self.layer.get_weights()[0]
-        ]
+        predictions = features * self.layer.get_weights()[0] + self.bias
         return self.activation(predictions)
 
     def backpropagate(self, data_fed_forward, features, labels):

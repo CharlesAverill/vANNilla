@@ -31,8 +31,8 @@ class Layer:
             self.weights = new_weights
         else:
             raise IndexError(
-                "Weight set failed: New weights do not "
-                "match shape of old weights"
+                f"Weight set failed: New weights {new_weights.shape} do not "
+                f"match old weights shape {self.weights.shape}"
             )
 
     def get_biases(self):

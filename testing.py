@@ -16,7 +16,7 @@ tf_model.compile(loss="mse", optimizer=tf.optimizers.Adam(learning_rate=0.05))
 tf_history = tf_model.fit(np.array(features), np.array(labels), epochs=150)
 
 network = SimpleNetwork(input_shape=len(features[0]), learning_rate=0.05)
-history = network.fit(features, labels, epochs=250)
+history = network.fit(features, labels, epochs=200)
 uniform = [[i / 100.0] for i in list(range(100))]
 predictions = network.predict(uniform)
 tf_preds = tf_model.predict(uniform)
