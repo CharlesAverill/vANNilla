@@ -55,30 +55,6 @@ def test_weight_change():
     inputs = Tensor([[1, 2], [3, 4], [5, 6], [7, 8]]).transposed
     partial_slope = Tensor([0.1, -0.1, -0.5, 0.5])
 
-    print(
-        "a",
-        Tensor(
-            (
-                np.array(old_weights)
-                - np.dot(
-                    np.array(inputs.tensor_values),
-                    np.array(partial_slope.tensor_values),
-                )
-                * learning_rate
-            ).tolist()
-        ),
-    )
-
-    print(
-        "b",
-        Tensor(
-            [
-                Tensor(weight) - dot * learning_rate
-                for weight, dot in zip(old_weights, inputs * partial_slope)
-            ]
-        ),
-    )
-
     assert Tensor(
         (
             np.array(old_weights)

@@ -367,7 +367,6 @@ class Tensor:
         sshape = self.shape
         if otype not in (int, float, Tensor):
             raise TypeError(f"Tensor cannot add with type {otype}")
-        print(other, otype)
         if otype in (int, float) or (
             otype == Tensor and len(other.shape) == 0
         ):
