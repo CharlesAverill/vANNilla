@@ -18,14 +18,23 @@ def test_comparisons():
 
 
 def test_outer_prod():
-    m = [[1, 2], [3, 4], [5, 6]]
-    n = [5, 6]
+    both_1d = [1, 5, 9], [27, -5, 16]
+    both_2d = [[0, 5, 3, 5], [2, 4, 68, 74]]
+    oned_scalar = [1, 2, 3, 4, 5], 97
+    twod_scalar = [[3, 2, 1, 5, 6], [23, 134, 235, 534, 54]], -9291
+    nd_1d = [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]], [45, 64, 56]
+    nd_md = [[[4, 23, 4], [234, 5, 654]], [[12, 34, 52], [23, 523, 5]]], [
+        [[12, 34, 52], [435, 5, 5], [0, 1, 2]],
+        [[1, 23, 5], [54, 65, 34], [3, 4, 5]],
+        [[10, 2, 50], [5, 6, 34], [6, 7, 8]],
+    ]
 
-    assert (
-        Tensor(np.dot(np.array(m), np.array(n)).tolist())
-        == Tensor(m) * Tensor(n)
-        == Tensor(m).dot(Tensor(n))
-    )
+    for m, n in [both_1d, both_2d, oned_scalar, twod_scalar, nd_1d, nd_md]:
+        assert (
+            Tensor(np.dot(np.array(m), np.array(n)).tolist())
+            == Tensor(m) * Tensor(n)
+            == Tensor(m).dot(Tensor(n))
+        )
 
 
 def test_add():

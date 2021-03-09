@@ -1,7 +1,6 @@
 from vANNilla.utils.matrix import (
     from_iterator,
     list_prod,
-    multidim_enumerate,
     multiply_accumulate,
     scalar_dot,
     zeros,
@@ -17,22 +16,22 @@ class Tensor:
         :param precision: Number of digits to round to when
                           checking equality
         """
+        type_tval = type(tensor_values)
         if shape is None and tensor_values is None:
             self.tensor_values = []
+            type_tval = list
         elif tensor_values is None:
             self.tensor_values = zeros(shape)
-        elif type(tensor_values) == int or type(tensor_values) == float:
-            self.tensor_values = tensor_values
-        elif type(tensor_values) == Tensor:
+        elif type_tval == int or type_tval == float:
+            self.tensor_values = round(tensor_values, precision)
+        elif type_tval == Tensor:
             self.tensor_values = tensor_values.copy_tensor_values()
-        elif type(tensor_values) == list:
+        elif type_tval == list:
             self.tensor_values = [
                 Tensor(t).tensor_values for t in tensor_values
             ]
         else:
-            raise TypeError(
-                f"Cannot create tensor from type {type(tensor_values)}"
-            )
+            raise TypeError(f"Cannot create tensor from type {type_tval}")
         self.precision = precision
 
     def multidim_enumerate(self, submatrix=None, dim=None):
@@ -139,59 +138,122 @@ class Tensor:
             from_iterator((flat for flat in self.flattened), new_shape)
         )
 
+    def apply_all(self, function, *args):
+        flat = self.flattened
+        flat = Tensor([function(f, args) for f in flat])
+        return flat.reshape(self.shape)
+
+    def tensor_indeces(self):
+        """
+        :return: List of tuples of all indeces in the Tensor
+        """
+        return [tuple(i[0]) for i in list(self.multidim_enumerate())]
+
+    def last_n_dimensions(self, n):
+        """
+        :param n: number of dimensions to pull from the end of the Tensor
+        :return: a Tensor of the n-dimensional subtensors within the last
+                 n dimensions of the Tensor
+        """
+        indeces = [pair[0][:-n] for pair in self.multidim_enumerate()]
+        # Remove copies
+        out = []
+        for idx in indeces:
+            try_append = self[tuple(idx)]
+            if try_append not in out:
+                out.append(try_append)
+        return out
+
     def dot(self, n):
-        if type(n) == int or type(n) == float:
+        n_type = type(n)
+        if n_type not in (int, float, Tensor):
+            raise TypeError(
+                f"Cannot take inner product of Tensor and {n_type}"
+            )
+        if n_type != Tensor:
             n = Tensor(n)
-        ttype = self.tensor_type
-        nttype = n.tensor_type
-        if type(n) != Tensor:
-            raise TypeError(f"Tensors cannot interact with type {type(n)}")
-        elif ttype == "empty" or nttype == "empty":
-            raise ValueError("Cannot operate on empty tensors")
-        elif nttype == ttype == "scalar":
-            return Tensor(n.tensor_values * self.tensor_values)
-        elif nttype == "scalar":
-            flattened_scaled = (
-                flat * n.tensor_values for flat in self.flattened
-            )
-            return Tensor(from_iterator(flattened_scaled, self.shape))
-        elif ttype == "scalar":
-            flattened_scaled = (
-                flat * self.tensor_values for flat in n.flattened
-            )
-            return Tensor(from_iterator(flattened_scaled, n.shape))
-        elif self.shape[-1] != n.shape[0]:
-            raise ValueError(
-                f"Dimension mismatch: shapes "
-                f"{self.shape} and {n.shape} are not aligned"
-            )
-        elif self.dims != n.dims:
-            if self.dims < n.dims:
-                tensor_a = self
-                tensor_b = n
-            else:
-                tensor_a = n
-                tensor_b = self
-            out = []
 
-            for column in tensor_b.tensor_values:
-                to_append = []
-                for a_value, b_value in zip(tensor_a.tensor_values, column):
-                    to_append.append(a_value * b_value)
-                out.append(sum(to_append))
+        nshape = n.shape
+        sshape = self.shape
 
-            return Tensor(out)
-        elif ttype == nttype == "vector":
-            return scalar_dot(self.tensor_values, n.tensor_values)
-        out = zeros((self.shape[-1], n.shape[0]))
-        for i in range(self.shape[-1]):
-            for j in range(n.shape[0]):
-                total = 0
-                for k in range(self.shape[-1]):
-                    total += self.tensor_values[i][k] * n.tensor_values[k][j]
-                out[i][j] = total
+        if len(nshape) == len(sshape) == 0:
+            # Two Scalars
+            return Tensor(self.tensor_values * n.tensor_values)
 
-        return Tensor(out)
+        elif len(nshape) == 0:
+            # N is a Scalar, self is a Tensor
+            def scalar_mul(*args):
+                return args[0] * args[1][0].tensor_values
+
+            return self.apply_all(scalar_mul, n)
+
+        elif len(sshape) == 0:
+            # N is a Scalar, self is a Tensor
+            def scalar_mul(*args):
+                return args[0] * args[1][0].tensor_values
+
+            return n.apply_all(scalar_mul, self)
+
+        elif len(nshape) == len(sshape) == 1:
+            # Two 1D Vectors
+            if nshape != sshape:
+                raise ArithmeticError(
+                    "Dimension mismatch: shapes "
+                    f"{sshape} and {nshape} are not aligned"
+                )
+            return Tensor(scalar_dot(self.tensor_values, n.tensor_values))
+
+        elif len(nshape) == len(sshape) == 2:
+            # 2D x 2D Matrix multiplication
+            if sshape[-1] != nshape[0]:
+                raise ArithmeticError(
+                    "Dimension mismatch: shapes "
+                    f"{sshape} and {nshape} are not aligned"
+                )
+
+            out = zeros((sshape[-1], nshape[0]))
+            for i in range(sshape[-1]):
+                for j in range(nshape[0]):
+                    total = 0
+                    for k in range(sshape[-1]):
+                        total += (
+                            self.tensor_values[i][k] * n.tensor_values[k][j]
+                        )
+                    out[i][j] = total
+            return out
+
+        elif len(nshape) == 1:
+            # ND Tensor and 1D Vector
+            if sshape[-1] != nshape[0]:
+                raise ArithmeticError(
+                    "Dimension mismatch: shapes "
+                    f"{sshape} and {nshape} are not aligned"
+                )
+
+            out = Tensor(shape=(sshape[:-1] + nshape[1:]))
+
+            for axis, row in zip(
+                out.tensor_indeces(), self.last_n_dimensions(1)
+            ):
+                out[axis] = scalar_dot(row, n)
+
+            return out
+
+        else:
+            # ND Tensor x MD Tensor
+            if sshape[-1] != nshape[-2]:
+                raise ArithmeticError(
+                    "Dimension mismatch: shapes "
+                    f"{sshape} and {nshape} are not aligned"
+                )
+
+            out = Tensor(shape=(sshape[:-1] + nshape[:-2] + nshape[-1:]))
+            for axis in zip(out.tensor_indeces()):
+                axis = axis[0]
+                second_to_last_axis_n = [i[axis[-1]] for i in n[axis[-2]]]
+                out[axis] = scalar_dot(self[axis[:-2]], second_to_last_axis_n)
+
+            return out
 
     def mean(self, axis=None):
         """
@@ -199,35 +261,83 @@ class Tensor:
                      mean of all values in the Tensor
         :return: Scalar mean if axis is None, Tensor mean along axis otherwise
         """
-        if not axis:
+        if axis is not None:
+
             m_shape = self.shape
             axis = axis % len(m_shape)
             out = zeros(m_shape[:axis] + m_shape[axis + 1 :])
-            for index, val in multidim_enumerate(self.tensor_values):
-                out = multiply_accumulate(
+            for item in self.multidim_enumerate():
+                index, val = item
+                multiply_accumulate(
                     out,
                     index[:axis] + index[axis + 1 :],
-                    1,
+                    1.0,
                     val / m_shape[axis],
                 )
             return Tensor(out)
         flat = self.flattened
         return sum(flat.tensor_values) / len(flat)
 
+    def sum(self, axis=None):
+        """
+        :param axis: Axis along which to take the sum. Leave as none to take
+                     sum of all values in the Tensor
+        :return: Scalar sum if axis is None, Tensor sum along axis otherwise
+        """
+        if axis is not None:
+
+            m_shape = self.shape
+            axis = axis % len(m_shape)
+            out = zeros(m_shape[:axis] + m_shape[axis + 1 :])
+            for item in self.multidim_enumerate():
+                index, val = item
+                multiply_accumulate(
+                    out, index[:axis] + index[axis + 1 :], 1.0, val
+                )
+            return Tensor(out)
+        flat = self.flattened
+        return sum(flat.tensor_values)
+
     def copy_tensor_values(self):
         """Return a copy of the tensor's values"""
-        try:
+        if isinstance(self.tensor_values, list):
             return self.tensor_values.copy()
-        except AttributeError:
+        else:
             return self.tensor_values
 
-    def __getitem__(self, item):
-        return Tensor(self.tensor_values[item])
+    def __copy__(self):
+        return Tensor(self.copy_tensor_values())
+
+    def __contains__(self, item):
+        return item in self.tensor_values
+
+    def __getitem__(self, key):
+        if type(key) == tuple:
+            temp_tensor = self
+            for slice_index in key:
+                temp_tensor = temp_tensor[slice_index]
+            return temp_tensor
+        return Tensor(self.tensor_values[key])
+
+    def __setitem__(self, key, value):
+        old = self[key]
+        if old.shape != Tensor(value).shape:
+            raise RuntimeWarning(
+                "This Tensor is now ragged due to an item "
+                "assignment with non-identical shape"
+            )
+        if type(key) == tuple:
+            temp_list = self.tensor_values
+            for slice_index in key[:-1]:
+                temp_list = temp_list[slice_index]
+            temp_list[key[-1]] = Tensor(value).tensor_values
+        else:
+            self.tensor_values[key] = Tensor(value).tensor_values
 
     def __len__(self):
         return len(self.tensor_values)
 
-    def __str__(self):
+    def __repr__(self):
         ttype = self.tensor_type
         if ttype == "empty":
             return "empty-tensor()"
@@ -241,6 +351,9 @@ class Tensor:
         out = out[:-2] + "])"
         return out
 
+    def __str__(self):
+        return str(self.tensor_values)
+
     def __neg__(self):
         ttype = self.tensor_type
         if ttype == "scalar":
@@ -251,10 +364,13 @@ class Tensor:
 
     def __add__(self, other):
         otype = type(other)
-        if otype != int and otype != float and otype != Tensor:
-            raise TypeError(f"Tensor cannot add with type {otype}")
         sshape = self.shape
-        if otype == int or otype == float:
+        if otype not in (int, float, Tensor):
+            raise TypeError(f"Tensor cannot add with type {otype}")
+        print(other, otype)
+        if otype in (int, float) or (
+            otype == Tensor and len(other.shape) == 0
+        ):
             return Tensor([flat + other for flat in self.flattened]).reshape(
                 sshape
             )
@@ -274,20 +390,29 @@ class Tensor:
                 ]
             ).reshape(sshape)
 
+    def __radd__(self, other):
+        return self.__add__(other)
+
     def __sub__(self, other):
-        otype = type(other)
-        if otype != int and otype != float and otype != Tensor:
-            raise TypeError(f"Tensor cannot subtract with type {otype}")
         return self + -other
+
+    def __rsub__(self, other):
+        return -self + Tensor(other)
 
     def __mul__(self, other):
         otype = type(other)
-        if otype != int and otype != float and otype != Tensor:
+        if otype not in (int, float, Tensor):
             raise TypeError(f"Tensor cannot multiply with type {otype}")
         return self.dot(other)
 
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
     def __iter__(self):
-        return iter(self.tensor_values)
+        if isinstance(self.tensor_values, list):
+            return iter(self.tensor_values)
+        else:
+            return iter([self.tensor_values])
 
     def __eq__(self, other):
         if type(other) != Tensor:

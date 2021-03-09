@@ -82,27 +82,7 @@ def multiply_accumulate(m, index, a=1, b=0):
     :param index: Output of multidim_enumerate(m)
     :param a: Multiplier
     :param b: Constant
-    :return: MAC of matrix m such that m <- (a * m) + b
     """
     for i in index[:-1]:
         m = m[i]
     m[index[-1]] = a * m[index[-1]] + b
-    return m
-
-
-def multidim_enumerate(m, dim=None):
-    """
-    :param m: Matrix
-    :param dim: Recursive value, represents
-                current dimension being recursed
-    :return: Yield values of a list similar to enumerate(),
-             but its indeces are the locations of the item
-             in given multi-dimensional matrix m
-    """
-    if dim is None:
-        dim = []
-    try:
-        for index, m_sub in enumerate(m):
-            yield from multidim_enumerate(m_sub, dim + [index])
-    except TypeError:
-        yield dim, m
