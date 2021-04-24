@@ -204,7 +204,7 @@ class Tensor:
             return self.apply_all(scalar_mul, n)
 
         elif len(sshape) == 0:
-            # N is a Scalar, self is a Tensor
+            # self is a Scalar, N is a Tensor
             def scalar_mul(*args):
                 return args[0] * args[1][0].tensor_values
 
